@@ -22,6 +22,36 @@ public class RepositoryFile implements Repository {
     }
 
     @Override
+    public void UpdateUser(User user,Fields field, String param){
+        if(field == Fields.NAME){
+            user.setFirstName(param);
+        }
+        else if(field == Fields.SIRNAME){
+            user.setLastName(param);
+        }
+        else if(field == Fields.TELEPHONE){
+            user.setPhone(param);
+        }
+        saveUser(user);
+    }
+
+    public void saveUser(User user){
+        List<String> lines = new ArrayList<>();
+        List<User> users = getAllUsers();
+        for (User item: users) {
+            if(user.getId().equals(item.getId())){
+                lines.add(mapper.map(user));
+            }
+            else {
+                lines.add(mapper.map(item));
+
+            }
+        }
+        fileOperation.saveAllLines(lines);
+
+    }
+
+    @Override
     public String CreateUser(User user) {
 
         List<User> users = getAllUsers();
@@ -36,30 +66,23 @@ public class RepositoryFile implements Repository {
         String id = String.format("%d", newId);
         user.setId(id);
         users.add(user);
-        List<String> lines = mapToString(users);
-        fileOperation.saveAllLines(lines);
-        return id;
-    }
-
-    private List<String> mapToString(List<User> users) {
         List<String> lines = new ArrayList<>();
         for (User item: users) {
             lines.add(mapper.map(item));
         }
-        return lines;
+        fileOperation.saveAllLines(lines);
+        return id;
     }
-
     @Override
-    public User updateUser(User user) {
+    public void delUser(User user) {
+        List<String> lines = new ArrayList<>();
         List<User> users = getAllUsers();
-        for (User currentUser: users) {
-            if (currentUser.getId().equals(user.getId())){
-                currentUser.setFirstName(user.getFirstName());
-                currentUser.setLastName(user.getLastName());
-                currentUser.setPhone(user.getPhone());
-            }
+        for (User item: users) {
+            if(!user.getId().equals(item.getId()))
+                lines.add(mapper.map(item));
         }
-        fileOperation.saveAllLines(mapToString(users));
-        return user;
+
+        fileOperation.saveAllLines(lines);
+        System.out.println("Удалено!");
     }
 }
